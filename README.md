@@ -2,6 +2,7 @@
 
 **Version:** 1.0  
 **Author:** iGenerate Digital  
+**Author URI:** [iGenerate Digital](https://www.igeneratedigital.com)
 **Description:** Stores Contact Form 7 submissions and allows for managing and exporting contacts.
 
 ## Description

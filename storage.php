@@ -4,6 +4,7 @@ Plugin Name: Contact List
 Description: Stores Contact Form 7 submissions and allows for managing and exporting contacts.
 Version: 1.0
 Author: iGenerate Digital
+Author URI: https://igeneratedigital.com.au
 */
 
 // Prevent direct access to the file
