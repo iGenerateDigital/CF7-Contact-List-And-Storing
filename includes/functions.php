@@ -96,16 +96,27 @@ function cf7_storage_get_forms() {
 // CSV export function
 function cf7_storage_export_csv() {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'cf7_storage';
+    $table_name = 'cf7_storage';
 
     $filename = 'cf7_contacts_' . date( 'YmdHis' ) . '.csv';
     header( 'Content-Type: text/csv' );
     header( 'Content-Disposition: attachment;filename=' . $filename );
 
     $output = fopen( 'php://output', 'w' );
+    if ( $output === false ) {
+        error_log('CF7 Storage: Failed to open output stream');
+        exit;
+    }
+
     fputcsv( $output, array( 'ID', 'Form Title', 'Name', 'Email', 'Website', 'Company', 'Phone', 'Comments', 'Submitted At' ) );
 
     $results = $wpdb->get_results( "SELECT * FROM $table_name", ARRAY_A );
+    if ( $results === false ) {
+        error_log('CF7 Storage: Failed to retrieve data from database - ' . $wpdb->last_error);
+        fclose($output);
+        exit;
+    }
+
     foreach ( $results as $row ) {
         fputcsv( $output, $row );
     }
