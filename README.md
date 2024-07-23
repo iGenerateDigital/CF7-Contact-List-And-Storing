@@ -1,4 +1,4 @@
-=== Contact List ===
+===  My Contacts ===
 Contributors: iGenerate Digital
 Donate link: https://igeneratedigital.com.au
 Tags: contact form, contact form 7, address book, csv export, form submissions

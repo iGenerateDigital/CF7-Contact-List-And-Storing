@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Contact List
+Plugin Name: My Contacts
 Description: Stores Contact Form 7 submissions and allows for managing and exporting contacts.
 Version: 1.0
 Author: iGenerate Digital
