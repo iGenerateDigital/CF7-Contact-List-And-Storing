@@ -30,50 +30,67 @@ function cf7_storage_admin_menu() {
 // Admin page content
 function cf7_storage_admin_page() {
     global $wpdb;
-    $table_name = 'cf7_storage';
+    $table_name = $wpdb->prefix . 'cf7_storage';
 
     if ( isset( $_POST['export_csv'] ) ) {
+        // Check nonce
+        if ( ! isset( $_POST['cf7_storage_export_nonce'] ) || ! wp_verify_nonce( $_POST['cf7_storage_export_nonce'], 'cf7_storage_export' ) ) {
+            wp_die( 'Nonce verification failed' );
+        }
+
         cf7_storage_export_csv();
     }
 
-    $results = $wpdb->get_results( "SELECT * FROM $table_name" );
+    // Try to get cached results
+    $cache_key = 'cf7_storage_results';
+    $results = wp_cache_get( $cache_key );
+
+    if ( $results === false ) {
+        // Prepare and execute the query
+        $query = "SELECT * FROM $table_name";
+        $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}cf7_storage" ), ARRAY_A );
+
+        // Cache the results
+        wp_cache_set( $cache_key, $results, '', 3600 ); // Cache for 1 hour
+    }
 
     ?>
     <div class="wrap">
-        <h1>Contact Form 7 Storage</h1>
+        <h1><?php esc_html_e( 'Contact Form Storage', 'cf7-storage' ); ?></h1>
         <form method="post">
+            <?php wp_nonce_field( 'cf7_storage_export', 'cf7_storage_export_nonce' ); ?>
             <table class="widefat fixed" cellspacing="0">
                 <thead>
                     <tr>
-                        <th class="manage-column column-cb check-column">ID</th>
-                        <th class="manage-column">Form Title</th>
-                        <th class="manage-column">Name</th>
-                        <th class="manage-column">Email</th>
-                        <th class="manage-column">Website</th>
-                        <th class="manage-column">Company</th>
-                        <th class="manage-column">Phone</th>
-                        <th class="manage-column">Comments</th>
-                        <th class="manage-column">Submitted At</th>
+                        <th class="manage-column column-cb check-column"><?php esc_html_e( 'ID', 'cf7-storage' ); ?></th>
+                        <th class="manage-column"><?php esc_html_e( 'Form Title', 'cf7-storage' ); ?></th>
+                        <th class="manage-column"><?php esc_html_e( 'Name', 'cf7-storage' ); ?></th>
+                        <th class="manage-column"><?php esc_html_e( 'Email', 'cf7-storage' ); ?></th>
+                        <th class="manage-column"><?php esc_html_e( 'Website', 'cf7-storage' ); ?></th>
+                        <th class="manage-column"><?php esc_html_e( 'Company', 'cf7-storage' ); ?></th>
+                        <th class="manage-column"><?php esc_html_e( 'Phone', 'cf7-storage' ); ?></th>
+                        <th class="manage-column"><?php esc_html_e( 'Comments', 'cf7-storage' ); ?></th>
+                        <th class="manage-column"><?php esc_html_e( 'Submitted At', 'cf7-storage' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ( $results as $row ) : ?>
                         <tr>
-                            <td><?php echo $row->id; ?></td>
-                            <td><?php echo $row->form_title; ?></td>
-                            <td><?php echo $row->name; ?></td>
-                            <td><?php echo $row->email; ?></td>
-                            <td><?php echo $row->website; ?></td>
-                            <td><?php echo $row->company; ?></td>
-                            <td><?php echo $row->phone; ?></td>
-                            <td><?php echo $row->comments; ?></td>
-                            <td><?php echo $row->submitted_at; ?></td>
+                            <td><?php echo esc_html( $row['id'] ); ?></td>
+                            <td><?php echo esc_html( $row['form_title'] ); ?></td>
+                            <td><?php echo esc_html( $row['name'] ); ?></td>
+                            <td><?php echo esc_html( $row['email'] ); ?></td>
+                            <td><?php echo esc_html( $row['website'] ); ?></td>
+                            <td><?php echo esc_html( $row['company'] ); ?></td>
+                            <td><?php echo esc_html( $row['phone'] ); ?></td>
+                            <td><?php echo esc_html( $row['comments'] ); ?></td>
+                            <td><?php echo esc_html( $row['submitted_at'] ); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
             <p>
-                <input type="submit" name="export_csv" class="button button-primary" value="Export to CSV">
+                <input type="submit" name="export_csv" class="button button-primary" value="<?php esc_attr_e( 'Export to CSV', 'cf7-storage' ); ?>">
             </p>
         </form>
     </div>
@@ -85,7 +102,7 @@ function cf7_storage_settings_page() {
     $forms = cf7_storage_get_forms();
     ?>
     <div class="wrap">
-        <h1>CF7 Storage Settings</h1>
+        <h1><?php esc_html_e( 'CF7 Storage Settings', 'cf7-storage' ); ?></h1>
         <h2 class="nav-tab-wrapper">
             <?php foreach ( $forms as $form ) : ?>
                 <a href="#tab-<?php echo esc_attr( $form['id'] ); ?>" class="nav-tab" data-tab="tab-<?php echo esc_attr( $form['id'] ); ?>"><?php echo esc_html( $form['title'] ); ?></a>
@@ -144,14 +161,14 @@ function cf7_storage_register_settings() {
     foreach ( $forms as $form ) {
         add_settings_section(
             'cf7_storage_settings_section_' . $form['id'],
-            $form['title'],
+            esc_html( $form['title'] ),
             null,
             'cf7-storage-settings-' . $form['id']
         );
 
         add_settings_field(
             'cf7_storage_name_field_' . $form['id'],
-            'Name Field',
+            esc_html__( 'Name Field', 'cf7-storage' ),
             'cf7_storage_field_callback',
             'cf7-storage-settings-' . $form['id'],
             'cf7_storage_settings_section_' . $form['id'],
@@ -166,7 +183,7 @@ function cf7_storage_register_settings() {
 
         add_settings_field(
             'cf7_storage_email_field_' . $form['id'],
-            'Email Field',
+            esc_html__( 'Email Field', 'cf7-storage' ),
             'cf7_storage_field_callback',
             'cf7-storage-settings-' . $form['id'],
             'cf7_storage_settings_section_' . $form['id'],
@@ -181,7 +198,7 @@ function cf7_storage_register_settings() {
 
         add_settings_field(
             'cf7_storage_website_field_' . $form['id'],
-            'Website Field',
+            esc_html__( 'Website Field', 'cf7-storage' ),
             'cf7_storage_field_callback',
             'cf7-storage-settings-' . $form['id'],
             'cf7_storage_settings_section_' . $form['id'],
@@ -196,7 +213,7 @@ function cf7_storage_register_settings() {
 
         add_settings_field(
             'cf7_storage_company_field_' . $form['id'],
-            'Company Field',
+            esc_html__( 'Company Field', 'cf7-storage' ),
             'cf7_storage_field_callback',
             'cf7-storage-settings-' . $form['id'],
             'cf7_storage_settings_section_' . $form['id'],
@@ -211,7 +228,7 @@ function cf7_storage_register_settings() {
 
         add_settings_field(
             'cf7_storage_phone_field_' . $form['id'],
-            'Phone Field',
+            esc_html__( 'Phone Field', 'cf7-storage' ),
             'cf7_storage_field_callback',
             'cf7-storage-settings-' . $form['id'],
             'cf7_storage_settings_section_' . $form['id'],
@@ -226,7 +243,7 @@ function cf7_storage_register_settings() {
 
         add_settings_field(
             'cf7_storage_comments_field_' . $form['id'],
-            'Comments Field',
+            esc_html__( 'Comments Field', 'cf7-storage' ),
             'cf7_storage_field_callback',
             'cf7-storage-settings-' . $form['id'],
             'cf7_storage_settings_section_' . $form['id'],

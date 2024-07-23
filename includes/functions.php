@@ -9,7 +9,7 @@ add_action( 'wpcf7_mail_sent', 'cf7_storage_save_contact' );
 
 function cf7_storage_save_contact( $contact_form ) {
     global $wpdb;
-    $table_name = 'cf7_storage';
+    $table_name = $wpdb->prefix . 'cf7_storage';
 
     $options = get_option( 'cf7_storage_settings' );
     $form_id = $contact_form->id();
@@ -57,6 +57,9 @@ function cf7_storage_save_contact( $contact_form ) {
 
             // Debugging: log any database errors
             error_log('CF7 Storage: Last error - ' . $wpdb->last_error);
+
+            // Clear cache
+            wp_cache_delete('cf7_storage_results');
         }
     }
 }
@@ -96,32 +99,73 @@ function cf7_storage_get_forms() {
 // CSV export function
 function cf7_storage_export_csv() {
     global $wpdb;
-    $table_name = 'cf7_storage';
+    $table_name = $wpdb->prefix . 'cf7_storage';
 
-    $filename = 'cf7_contacts_' . date( 'YmdHis' ) . '.csv';
-    header( 'Content-Type: text/csv' );
-    header( 'Content-Disposition: attachment;filename=' . $filename );
+    $filename = 'cf7_contacts_' . gmdate( 'YmdHis' ) . '.csv';
 
-    $output = fopen( 'php://output', 'w' );
-    if ( $output === false ) {
-        error_log('CF7 Storage: Failed to open output stream');
+    // Initialize the WP Filesystem
+    if ( ! function_exists( 'WP_Filesystem' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+    WP_Filesystem();
+    global $wp_filesystem;
+
+    // Create a temporary file in the WP filesystem
+    $temp_file = wp_tempnam( $filename );
+    if ( ! $temp_file ) {
+        error_log('CF7 Storage: Failed to create temporary file');
         exit;
     }
 
-    fputcsv( $output, array( 'ID', 'Form Title', 'Name', 'Email', 'Website', 'Company', 'Phone', 'Comments', 'Submitted At' ) );
+    // Create CSV content
+    $csv_content = [];
+    $csv_content[] = implode( ',', array( 'ID', 'Form Title', 'Name', 'Email', 'Website', 'Company', 'Phone', 'Comments', 'Submitted At' ) );
 
-    $results = $wpdb->get_results( "SELECT * FROM $table_name", ARRAY_A );
+    // Try to get cached results
+    $cache_key = 'cf7_storage_results';
+    $results = wp_cache_get( $cache_key );
+
+    if ( $results === false ) {
+        // Prepare and execute the query
+        $query = "SELECT * FROM $table_name";
+        $results = $wpdb->get_results( $query, ARRAY_A );
+
+        // Cache the results
+        wp_cache_set( $cache_key, $results, '', 3600 ); // Cache for 1 hour
+    }
+
     if ( $results === false ) {
         error_log('CF7 Storage: Failed to retrieve data from database - ' . $wpdb->last_error);
-        fclose($output);
+        $wp_filesystem->delete( $temp_file );
         exit;
     }
 
     foreach ( $results as $row ) {
-        fputcsv( $output, $row );
+        $csv_content[] = implode( ',', array_map( 'esc_attr', $row ) );
     }
 
-    fclose( $output );
+    // Write CSV content to the temporary file using WP_Filesystem
+    if ( ! $wp_filesystem->put_contents( $temp_file, implode( "\n", $csv_content ), FS_CHMOD_FILE ) ) {
+        error_log('CF7 Storage: Failed to write to temporary file');
+        $wp_filesystem->delete( $temp_file );
+        exit;
+    }
+
+    // Read the file and output it to the browser
+    $file_data = $wp_filesystem->get_contents( $temp_file );
+    if ( $file_data === false ) {
+        error_log('CF7 Storage: Failed to read temporary file');
+        $wp_filesystem->delete( $temp_file );
+        exit;
+    }
+
+    header( 'Content-Type: text/csv' );
+    header( 'Content-Disposition: attachment;filename=' . esc_attr( $filename ) );
+    echo esc_html( $file_data );
+
+    // Clean up the temporary file
+    $wp_filesystem->delete( $temp_file );
+
     exit;
 }
 ?>

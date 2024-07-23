@@ -5,6 +5,8 @@ Description: Stores Contact Form 7 submissions and allows for managing and expor
 Version: 1.0
 Author: iGenerate Digital
 Author URI: https://igeneratedigital.com.au
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 // Prevent direct access to the file
@@ -23,7 +25,7 @@ register_deactivation_hook( __FILE__, 'cf7_storage_deactivate' );
 // Activation function
 function cf7_storage_activate() {
     global $wpdb;
-    $table_name = 'cf7_storage';
+    $table_name = $wpdb->prefix . 'cf7_storage';
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $table_name (
@@ -56,7 +58,7 @@ function cf7_storage_enqueue_admin_scripts($hook) {
         return;
     }
 
-    wp_enqueue_style('cf7-storage-admin-style', plugin_dir_url(__FILE__) . 'css/admin-style.css');
-    wp_enqueue_script('cf7-storage-admin-script', plugin_dir_url(__FILE__) . 'js/admin-script.js', array('jquery'), null, true);
+    wp_enqueue_style('cf7-storage-admin-style', plugin_dir_url(__FILE__) . 'css/admin-style.css', array(), '1.0');
+    wp_enqueue_script('cf7-storage-admin-script', plugin_dir_url(__FILE__) . 'js/admin-script.js', array('jquery'), '1.0', true);
 }
 ?>

@@ -1,16 +1,21 @@
-# CF7 Contact List
+=== Contact List ===
+Contributors: iGenerate Digital
+Donate link: https://igeneratedigital.com.au
+Tags: contact form, contact form 7, address book, csv export, form submissions
+Requires at least: 5.0
+Tested up to: 6.6
+Requires PHP: 7.2
+Stable tag: 1.0
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-**Version:** 1.0  
-**Author:** iGenerate Digital  
-**Author URI:** [iGenerate Digital](https://www.igeneratedigital.com)
-**Description:** Stores Contact Form 7 submissions and allows for managing and exporting contacts.
+== Short Description ==
+Contact List stores Contact Form 7 submissions and allows for managing and exporting contacts.
 
-## Description
-
+== Description ==
 Contact List is a WordPress plugin that stores submissions from Contact Form 7 forms. It allows you to manage and export contacts to a CSV file. The plugin includes a settings page where you can map form fields to database columns for each Contact Form 7 form.
 
-## Installation
-
+== Installation ==
 1. **Download the Plugin:**
    - Download the latest version of the plugin from the repository or release page.
 
@@ -26,10 +31,8 @@ Contact List is a WordPress plugin that stores submissions from Contact Form 7 f
 4. **Verify Database Table:**
    - The plugin will automatically create a database table named `cf7_storage` to store the submissions.
 
-## Usage
-
+== Usage ==
 ### Setting Up Field Mappings
-
 1. **Go to Settings:**
    - Navigate to `CF7 Storage` > `Settings` in the WordPress Admin Dashboard.
 
@@ -43,7 +46,6 @@ Contact List is a WordPress plugin that stores submissions from Contact Form 7 f
    - Click the `Save Changes` button to save the mappings.
 
 ### Viewing and Exporting Submissions
-
 1. **View Submissions:**
    - Navigate to `CF7 Storage` in the WordPress Admin Dashboard.
    - You will see a list of all stored submissions with their details.
@@ -51,47 +53,31 @@ Contact List is a WordPress plugin that stores submissions from Contact Form 7 f
 2. **Export to CSV:**
    - To export the submissions to a CSV file, click the `Export to CSV` button.
 
-## Developer Notes
-
-### Database Table
-
-The plugin creates a database table named `cf7_storage` with the following structure:
-
-```sql
-CREATE TABLE cf7_storage (
-    id mediumint(9) NOT NULL AUTO_INCREMENT,
-    form_title varchar(255) NOT NULL,
-    name varchar(255) NOT NULL,
-    email varchar(255) NOT NULL,
-    website varchar(255) NOT NULL,
-    company varchar(255) NOT NULL,
-    phone varchar(20) NOT NULL,
-    comments text NOT NULL,
-    submitted_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    PRIMARY KEY (id)
-);
-
-### Hooks
-- `wpcf7_mail_sent`: This hook is used to save form submissions to the database.
-
-### Functions
-- `cf7_storage_save_contact`: Handles saving form submissions to the database.
-- `cf7_storage_get_forms`: Fetches all Contact Form 7 forms and their fields.
-- `cf7_storage_export_csv`: Handles exporting stored contacts to a CSV file.
-
-### Troubleshooting
-
-**Submissions Not Storing:**
-- Ensure the database table `yov_cf7_storage` exists and has the correct structure.
+== Frequently Asked Questions ==
+= Why are my form submissions not being stored? =
+- Ensure the database table `cf7_storage` exists and has the correct structure.
 - Check the `wp-content/debug.log` file for any errors.
 - Verify field mappings in the settings page.
 
-**CSV Export Issues:**
+= Why is the CSV export not working? =
 - Ensure there are submissions stored in the database.
 - Check for any errors during the export process.
 
-### License
+== Screenshots ==
+1. Screenshot showing the settings page.
+2. Screenshot showing the submissions list.
+3. Screenshot showing the CSV export button.
+
+== Changelog ==
+= 1.0 =
+* Initial release.
+
+== Upgrade Notice ==
+= 1.0 =
+* Initial release.
+
+== License ==
 This plugin is licensed under the GPLv2 or later.
 
-### Contact
+== Contact ==
 For support or questions, please contact support@igeneratedigital.com.au.
